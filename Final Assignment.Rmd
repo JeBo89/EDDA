@@ -17,17 +17,17 @@ cars_data <- read_excel("CarsData.xlsx")
 ```
 
 # 1. Introduction
-The ability to properly analyze data is very important in the art of research. Using big data sets gives more possibilities in analyzing data and generalize conclusions from the data. For this paper, a large data set with a great number of variables about factors as well as prices of cars, is used. 
+The ability to properly analyze data is very important in the art of research. Using big data sets gives more possibilities in analyzing data and generalize conclusions from the data. For this paper, a large data set with a great number of variables about factors as well as prices of cars, is used.
 
 ## 1.1 Research Questions
-The purpose of this document is to investigate what are the most important factors contributing to gaining profit from a car sale. By examining this, car dealers could maximize the factors for higher profits. To substantiate the purpose of this paper, some research questions have been proposed. The main research question is which factors significantly contribute to the profitability of cars. Within these factors, different numeric variables are distinguished as potential influencers such as horsepower and weight of the car. In addition, different categorical factors are distinguished, such as the type of car and which wheel drive the car has. Finally, there are still factors like potential influencers, such as number of cylinders and engine size.
+The purpose of this document is to investigate what are the most important factors contributing to gaining profit from a car. By examining this, car dealers could maximize the factors for higher profits. To support the goal of this paper, some research questions have been proposed. The main research question is: Which factors contribute significantly to the profitability of cars? Within the data about the cars,  different numeric variables are distinguished as potential influencers such as horsepower and weight of the car. In addition, different categorical factors are distinguished, such as the type of car and which wheel drive the car has. Finally, there are still factors like potential influencers, such as number of cylinders and engine size.
 
 ## 1.2 Hypotheses
-It is anticipated, on the basis of prior knowledge, that the numerical variables, in particular horsepower, have an effect on profit, of the categorical variables, which type of car has the most impact on profit, which is expected to give sports vehicles more profit than other types of cars . Factors are expected to positively relate to both number of cylinders and engine size. It is expected of engine size and cylinders that these two factors are also highly related.
+It is anticipated, on the basis of prior knowledge, that the numerical variables, in particular horsepower, have an effect on profit. Of the categorical variables, which type of car has the most impact on profit, which is expected to give sports vehicles more profit than other types of cars . Factors are expected to positively relate to both number of cylinders and engine size. It is expected of engine size and cylinders that these two factors are also highly related.
 Based on the results of this research, it can be concluded which variables ensure the highest profit of cars.
  
 # 2. Dataset
-The data set that is used comes from JSE Data Archive(1). The data consist of 428 cars, with features about the car in 19 variables. For this paper the variable "Profit" was added to the data set, "profit" is used as an output variable in this paper. There was one variable removed, being vehicle name, since the goal of this research is to find out which factors of the car give more profit. Brand name is not taken into consideration. The variables, and their data types are displayed below. The types that are behind the data, are the types we worked with. For some variables, a transformation was done, the prior type as well as the type that was worked in for the analysis is displayed. There were some missing values in the data, these values are replaced with N/A, manually.
+The data set that is used comes from JSE Data Archive$^1$. The data consist of 428 cars, with features about the car in 19 variables. For this paper the variable "Profit" was added to the data set, "profit" is used as an output variable in this paper. There was one variable removed, being vehicle name, since the goal of this research is to find out which factors of the car give more profit. Brand name is not taken into consideration. The variables, and their data types are displayed below. The types that are behind the data, are the types we worked with. For some variables, a transformation was done, the prior type as well as the type that was worked in for the analysis is displayed. There were some missing values in the data, these values are replaced with N/A, manually.
 
 ```{r, echo=FALSE, warning=FALSE}
 #Making variable profit
@@ -53,7 +53,7 @@ new_names$Width=as.numeric(new_names$Width)
 ```
 # 2.1 Variable Descriptions
 **Variables** | **Type**
-----------------------------------------------|----------------
+--------------------------------------------|----------------
 1. Sports Car? (1=yes, 0=no) | Binominal
 2. Sport Utility Vehicle? (1=yes, 0=no) | Binominal
 3. Wagon? (1=yes, 0=no) | Binominal
@@ -76,10 +76,9 @@ new_names$Width=as.numeric(new_names$Width)
  
 # 3. Methods
 To analyze the data, the program R was used. The code used to analyze the data can be found in the Appendix.
-To investigate the relation between different features of cars and profit, differnt analysis are used. To start, some graphical representations are made. These grapical representations, together with some correlations give the first insights in how the different data relate to each other. Besides these first tests the data are checked if they stem from a normal distributed population, to do so, qq-plots as well as shapiro tests are used.
-To analyze the aspects of a car with a numerical representation and their relation to profit, a linear model will be made. A step-down method will be used to find out which factors are of significant influence. To check for collinearity, after the step-down method, a step-up method will be used for the linear model. Variables taken into consideration when making the linear model are "horsepower" "citymilespergallon", "highwaymilespergallon", "weight", "wheelbase", "length", "width". "Profit" will be used as outcome variable. 
-To investigate how categoric data relate to profit, a Mann-Whitney test will be used. Priot these tests the data was checked. Only the variable "weight" appeared to be normally distributed. Therefore a Mann-Whitney test was used. 
-To investigate how the factors "engine size" and "number of cylinders" relate to profit, an ANCOVA test is used.
+To investigate the relation between different features of cars and profit, different analysis are used. To start, some graphical representations are made. These graphical representations, together with some correlations give the first insights in how the different data relates to profit. Besides these first tests the data are checked for normality, to do so, Q-Q plots as well as Shapiro-Wilk tests are used.
+To analyze the aspects of a car with a numerical representation and their relation to profit, a linear model will be made. A step-down method will be used to find out which factors are of significant influence. To check the model, after the step-down method, a step-up method will be used for the linear model. Variables taken into consideration when making the linear model are "horsepower" "citymilespergallon", "highwaymilespergallon", "weight", "wheelbase", "length", "width". "Profit" will be used as outcome variable. 
+To investigate how categoric data relates to profit, a Mann-Whitney-Wilcoxon test will be used. This nonparametric test-statistic is used, because the Shapiro-Wilk test for normality was significant for profit.  To investigate how the factorial variables "engine size" and "number of cylinders" relate to profit, an ANCOVA test is used
  
 # 4. First Analyses and Graphical Representations
 
@@ -345,11 +344,12 @@ plot3 <- ggboxplot(new_names, x = "Wagon", y = "Profit",
 plot4 <- ggboxplot(new_names, x = "Minivan", y = "Profit", 
           color = "Minivan", palette = c("#00AFBB", "#E7B800"),
           ylab = "Profit", xlab = "Minivan")
-grid.arrange(plot3, plot4, ncol=2)
 plot5 <- ggboxplot(new_names, x = "Pickup", y = "Profit", 
           color = "Pickup", palette = c("#00AFBB", "#E7B800"),
           ylab = "Profit", xlab = "Pickup")
-grid.arrange(plot5, ncol=2)
+grid.arrange(plot3, plot4, plot5, ncol=3)
+
+#grid.arrange(plot5, ncol=2)
 ```
 ```{r, echo=FALSE, eval=FALSE}
 wilcox.test(Profit, new_names$sportcar, alternative = "two.sided")
@@ -370,14 +370,12 @@ The last variables that are not considered in any other analysis are engine size
 
 ## 7.1 ANCOVA
 Two ANCOVA's are used with the purpose to compare the profit of a car made on several engine sizes(1) and number of cylinders(2). Where horsepower is the numeric value in the ANCOVA model that closely relates to the two factors mentioned. Before performing the ANCOVA test it is practical to make a scatter plot of the response variable (Profit) against the covariate (engine size or number of cylinders), using separate symbols for each level of the factor.
-
 ```{r, echo=FALSE, fig.height=3, fig.align='center'}
 par(mfrow=c(1,2))
-plot(Profit~new_names$Horsepower,pch=as.character(new_names$enginesize), xlab="Horsepower")
-plot(Profit~new_names$Horsepower,pch=as.character(new_names$numberofcylinders), xlab="Horsepower")
+plot(Profit~new_names$Horsepower,pch=as.character(new_names$enginesize), main="Scatterplot Enginesize", xlab="Horsepower")
+plot(Profit~new_names$Horsepower,pch=as.character(new_names$numberofcylinders), main="Scatterplot number of cylinders", xlab="Horsepower")
 ```
 As is visible from the plots above, the linearity and equal slope assumption that is required for ANCOVA are visible in both figures. With the exception of a few points, it looks like with the increase of engine size and number of cylinders in combination with horsepower it increases the profit. After the previous step it is possible to perform a one-way ANCOVA model, controlling for the Profit to check the mentioned assumption.
-
 ```{r, echo=FALSE, eval=FALSE}
 Enginesize = as.factor(new_names$enginesize)
 Enginesizeaov = lm(Profit~new_names$Horsepower+new_names$enginesize)
@@ -408,11 +406,11 @@ According to the output it became clear that the engine sizes has no significant
 When looking at the ANCOVA analysis, the results show that engine size as well as number of cylinders has no significant influence on profit. These factors, however are closely related to horsepower, that has showed significant influence on profit in the linear model. We can assume that these factors alone do not have influence on profit. We can however assume that engine size as well as number of cylinders do have an indirect relation with profit, via horsepower, as they are closely related to horsepower.
  
 # 8. Conclusion
-
-
+In this report, different statistical analyses were performed to find out the relation between different variables in relation to profit of a car. A linear model was made, several Mann-Whitney-Wilcoxon tests were performed and an ANCOVA analysis was done to find out how different variables relate to profit. These analysis showed that out of numerical variables, horsepower,  highway miles per gallon, weight and wheelbase showed significant influence on profit. Horsepower, highway miles per gallon and weight have a positive relation with profit, whereas wheelbase holds a negative relation with profit.  The binomial variables all showed difference in profit. All-wheel drive and rear-wheel drive gave higher profits than not-all-wheel drive or not rear-wheel drive. Car type also gave differences in profit. Sport cars and sport utility vehicles gave higher profits than other types of cars. The ANCOVA analysis showed that engine size and number of cylinders have no significant influence on profit. Although engine size and number of cylinders are closely related to horsepower, therefore these factors could be indirect related to profit via horsepower. 
+The results of the performed analyses, could help car dealers to focus on certain aspects of cars or certain types of cars to obtain the maximum profit.
  
 # Appendix. A
-Code
+The full code of this final assignment is available trough the following GitHub link: https://github.com/JeBo89/EDDA and then 'Final Assignment.Rmd'.
  
 # References
-
+1. Matthew Ward, Georges Grinstein & Daniel Keim (2004) Interactive Data Visualization, *2004 Cars and Trucks*. Retrieved from: http://www.idvbook.com/teaching-aid/data-sets/2004-cars-and-trucks-data/
