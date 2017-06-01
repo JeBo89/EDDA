@@ -1,0 +1,418 @@
+---
+title: "The Influence of Various factors on the Profit made on Cars"
+author: "Jeroen Borst(1989758) & Judith Klepper(2590080)"
+date: "June 1, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE)
+rm(list=ls()) #Clear Global Environment
+setwd("C:/Users/JeBo/Google Drive/Vakken/Experimental Design and Data Analysis/Assignments/Final Assignment")
+```
+
+```{r, echo=FALSE}
+library(readxl)
+cars_data <- read_excel("CarsData.xlsx")
+```
+
+# 1. Introduction
+The ability to properly analyze data is very important in the art of research. Using big data sets gives more possibilities in analyzing data and generalize conclusions from the data. For this paper, a large data set with a great number of variables about factors as well as prices of cars, is used. 
+
+## 1.1 Research Questions
+The purpose of this document is to investigate what are the most important factors contributing to gaining profit from a car sale. By examining this, car dealers could maximize the factors for higher profits. To substantiate the purpose of this paper, some research questions have been proposed. The main research question is which factors significantly contribute to the profitability of cars. Within these factors, different numeric variables are distinguished as potential influencers such as horsepower and weight of the car. In addition, different categorical factors are distinguished, such as the type of car and which wheel drive the car has. Finally, there are still factors like potential influencers, such as number of cylinders and engine size.
+
+## 1.2 Hypotheses
+It is anticipated, on the basis of prior knowledge, that the numerical variables, in particular horsepower, have an effect on profit, of the categorical variables, which type of car has the most impact on profit, which is expected to give sports vehicles more profit than other types of cars . Factors are expected to positively relate to both number of cylinders and engine size. It is expected of engine size and cylinders that these two factors are also highly related.
+Based on the results of this research, it can be concluded which variables ensure the highest profit of cars.
+ 
+# 2. Dataset
+The data set that is used comes from JSE Data Archive(1). The data consist of 428 cars, with features about the car in 19 variables. For this paper the variable "Profit" was added to the data set, "profit" is used as an output variable in this paper. There was one variable removed, being vehicle name, since the goal of this research is to find out which factors of the car give more profit. Brand name is not taken into consideration. The variables, and their data types are displayed below. The types that are behind the data, are the types we worked with. For some variables, a transformation was done, the prior type as well as the type that was worked in for the analysis is displayed. There were some missing values in the data, these values are replaced with N/A, manually.
+
+```{r, echo=FALSE, warning=FALSE}
+#Making variable profit
+cars_data$Profit<-cars_data$`Suggested Retail Price` - cars_data$`Dealer Cost`
+Profit = cars_data$Profit
+
+#Making data without brand name
+newdata<-cars_data[-1]
+
+# Naming variables without spaces
+library(plyr)
+new_names= rename(newdata, c("Sports Car"= "sportcar", "Sport Utility Vehicle"= "sportutilityvehicle", "All-Wheel Drive"= "allwheeldrive", "Rear-Wheel Drive"= "rearwheeldrive", "Suggested Retail Price"= "suggestedretailprice", "Dealer Cost"= "dealercost", "Engine Size"= "enginesize", 
+"Number Of Cylinders"="numberofcylinders", "City Miles Per Gallon"="citymilespergallon", 
+"Highway Miles Per Gallon"="highwaymilespergallon", "Wheel Base"= "wheelbase"))
+
+new_names$Horsepower=as.numeric(new_names$Horsepower)
+new_names$citymilespergallon=as.numeric(new_names$citymilespergallon)
+new_names$highwaymilespergallon=as.numeric(new_names$highwaymilespergallon)
+new_names$Weight=as.numeric(new_names$Weight)
+new_names$wheelbase=as.numeric(new_names$wheelbase)
+new_names$Length=as.numeric(new_names$Length)
+new_names$Width=as.numeric(new_names$Width)
+```
+# 2.1 Variable Descriptions
+**Variables** | **Type**
+----------------------------------------------|----------------
+1. Sports Car? (1=yes, 0=no) | Binominal
+2. Sport Utility Vehicle? (1=yes, 0=no) | Binominal
+3. Wagon? (1=yes, 0=no) | Binominal
+4. Minivan? (1=yes, 0=no) | Binominal
+5. Pickup? (1=yes, 0=no) | Binominal
+6. All-Wheel Drive? (1=yes, 0=no) | Binominal
+7. Rear-Wheel Drive? (1=yes, 0=no) | Binominal
+8. Suggested Retail Price, what the manufacturer thinks the vehicle is worth, including adequate profit for the automaker and the dealer (U.S. Dollars) | Numeric
+9. Dealer Cost (or "invoice price"), what the dealership pays the manufacturer (U.S. Dollars) | Numeric
+10. Engine Size (liters) | Factor
+11. Number of Cylinders (=-1 if rotary engine) | Factor
+12. Horsepower | Numeric (was Factor)
+13. City Miles Per Gallon | Numeric
+14. Highway Miles Per Gallon | Numeric
+15. Weight (Pounds) | Numeric (was Factor)
+16. Wheel Base (inches) | Numeric
+17. Length (inches) | Numeric
+18. Width (inches) | Numeric
+19. 'Profit, Suggested Retail Price' - 'Dealer Cost' (U.S. Dollars) | Numeric
+ 
+# 3. Methods
+To analyze the data, the program R was used. The code used to analyze the data can be found in the Appendix.
+To investigate the relation between different features of cars and profit, differnt analysis are used. To start, some graphical representations are made. These grapical representations, together with some correlations give the first insights in how the different data relate to each other. Besides these first tests the data are checked if they stem from a normal distributed population, to do so, qq-plots as well as shapiro tests are used.
+To analyze the aspects of a car with a numerical representation and their relation to profit, a linear model will be made. A step-down method will be used to find out which factors are of significant influence. To check for collinearity, after the step-down method, a step-up method will be used for the linear model. Variables taken into consideration when making the linear model are "horsepower" "citymilespergallon", "highwaymilespergallon", "weight", "wheelbase", "length", "width". "Profit" will be used as outcome variable. 
+To investigate how categoric data relate to profit, a Mann-Whitney test will be used. Priot these tests the data was checked. Only the variable "weight" appeared to be normally distributed. Therefore a Mann-Whitney test was used. 
+To investigate how the factors "engine size" and "number of cylinders" relate to profit, an ANCOVA test is used.
+ 
+# 4. First Analyses and Graphical Representations
+
+## 4.1 Graphical Representations
+To get some more insights into the data, some graphical representations were made to look into how the data are divided.
+```{r, echo=FALSE, fig.height=3, fig.align='center'}
+par(mfrow=c(1,3))
+hist(new_names$dealercost, xlab="Dealer Costs in Dollars", main="Histogram of dealer costs"); hist(new_names$suggestedretailprice, xlab="Suggested Retail Price in Dollars", main="Histogram of Suggested Retail Price"); hist(new_names$Profit, xlab="Profit per Car in Dollars",
+main="Histogram of Profit per Car")
+
+#mean(new_names$Profit)
+#mean(new_names$suggestedretailprice)
+#mean(new_names$dealercost)
+``` 
+Since the relation between Dealer Costs and Suggested Retail price can be displayed in the variable Profit, from now on, profit will be used as an outcome to determine which factors have highest impact on the profit that is made with each car. 
+```{r, echo=FALSE, fig.height=3, fig.align='center'}
+par(mfrow=c(1,2))
+plot(Profit, main = "Plot of Profit"); boxplot(Profit, ylab= "Profit in Dollars", main="Boxplot of Profit")
+```
+## 4.2 Testing for Basic Assumptions
+For the variables "dealer cost", "suggested retail price" and "profit", Q-Q plots for normality are used. These, and all other numerical variables are tested for normality using a Shapiro-Wilk test for Normality. This test is chosen to check for normality  because of it's high power. The Q-Q plots are displayed below, from this plot can be seen that the data do not seem to stem from normal distributed data. The Shapiro-Wilk test confirms this result, for "dealer cost", "suggested retail price" and "profit", all W-values are below 0.9, all p-values are p<.001. The H0, that data is normally distributed, can not be assumed. For the other numerical variables the Shapiro-Wilk test, gives also significant results, for "Horsepower", "Weight", City Miles per Gallon" and "Highway Miles per Gallon", the Shapiro-Wilk test gives p-values of p<.001. For these values, H0, that data normally distributed, can not be assumed. For "Length", the Shapiro-Wilk test gives W=0.995, p=0.210. For the variable "Length", H0, that data stems from a normal distribution, can be assumed. A Q-Q plot from "Length" is displayed below, to confirm normality.
+```{r, echo=FALSE, eval=FALSE}
+shapiro.test(new_names$Profit)
+shapiro.test(new_names$suggestedretailprice)
+shapiro.test(new_names$dealercost)
+#Voor andere variabelen
+
+shapiro.test(new_names$Horsepower)
+shapiro.test(new_names$Length)
+shapiro.test(new_names$Weight)
+shapiro.test(new_names$Width)
+shapiro.test(new_names$citymilespergallon)
+shapiro.test(new_names$highwaymilespergallon)
+```
+```{r, echo=FALSE, fig.height=3, fig.width=3, fig.align='center'}
+# Voor kosten en verkoopprijs en winst
+#par(mfrow=c(1,3))
+qqnorm(new_names$Length);qqline(new_names$Length)
+#qqnorm(new_names$suggestedretailprice);qqline(new_names$suggestedretailprice)
+#qqnorm(new_names$dealercost);qqline(new_names$dealercost)
+```
+Performing Shapiro-Wilk normality tests on all numerical variables gives as output that almost all variables give a significant p-value (p<.05), which means that for almost all variables, the H0, that the data stem from  normally distibuted data can be rejected. Only the variable "Length" gives a p=.210, which means for "length" H0, that the data stem from a normal distribution, can not be rejected.
+
+## 4.3 First relations
+To get first insights in the relations of the variables with "Profit", a Scatterplot matrix was made of numerical variables and profit, the scatter plots are displayed below. 
+```{r, echo=FALSE, fig.align='center'}
+expl_var = new_names[8:19]
+expl_var = expl_var[,-c(3,4)]
+pairs(expl_var, main="Scatterplot")
+#cor(expl_var, Profit, method = "pearson")
+```
+Out of the pairs test and the correlation test, suggested retail price, dealer costs and horsepower seem to have the highest relation with profit.
+Further insights in these relations will be explored in the linear model of the next paragraph.
+
+# 5. Linear Model
+## 5.1 Step-Down Model
+Profit was used as an outcome variable in the linear model.  The linear model was composed by starting with all explanatory variables. From there, non-significant variables were deleted from the model. As long as the Multiple  R-Squared of the model kept rising when variables were deleted, variables were removed.
+The first model used was: lm(Profit~Horsepower + citymilespergallon + highwaymilespergallon + Weight + wheelbase + Length + Width  ). This model had a Multiple R-Squared of 0.6597, p<.001. The first variable that was removed from the model was "Width", this variable had the highest p-value of p=0.725. After removing "Width", the R-squared of the model was 0.666. The next variable that was removed was "citymilespergallon", with a p-value of p=0.576. After removing "citymilespergallon", the R-squared of the model was 0.666. The last variable that was removed was "Length", with a p-value of p=0.132. After this, all variables of the model were significant. The final model has a R-squared of 0.666. The final step-down model is:
+lm(Profit ~Horsepower + highwaymilespergallon + Weight + wheelbase)
+
+```{r, echo=FALSE, eval=FALSE}
+#Assumption: Profit is explained due to the folowwing explanatory variables:
+  # Horsepower - City Miles Per Gallon - 	Highway Miles Per Gallon - Weight -	Wheel Base - 	Length - 	Width
+stepdown1= lm (Profit~Horsepower + citymilespergallon + highwaymilespergallon + Weight + wheelbase + Length + Width  , data = new_names )
+summary(stepdown1)
+
+#Width has the highest p value of 0.725, so will be removed first
+
+stepdown2= lm (Profit~Horsepower + citymilespergallon + highwaymilespergallon + Weight + wheelbase + Length, data = new_names )
+summary(stepdown2)
+
+#citymilespergallon has a p value of 0.5757 so will be removed second
+
+stepdown3= lm (Profit~Horsepower + highwaymilespergallon + Weight + wheelbase + Length, data = new_names )
+summary(stepdown3)
+
+#Length has a p value of 0.132 so will be removed second
+
+stepdown4= lm(Profit~Horsepower + highwaymilespergallon + Weight + wheelbase, data = new_names )
+summary(stepdown4)
+
+#stop when all explanatory variables in the model are significant.
+```
+## 5.1 Step-up Model
+To start the step-up model, all simple linear regression models were fitted first. The first explanatory variable of the step-up model is the variable with the highest determination coefficient, in this case "Horsepower" with a Multiple R-squared of 0.622 (p<.001). All other explanatory variables were then checked with "Horsepower", the highest R-squared in combination with "Horsepower" was "wheelbase", with a Multiple R-squared of 0.641 (p<.001). The variable that gave the highest Multiple R-Squared together with "Horsepower" and "wheelbase", was "Weight", with a Multiple R-squared of 0.650 (p<.001). The last  variable that was added to the model was "highwaymilespergallon", with a Multiple R-squared of 0.656 (p<.001). Adding more values to the model resulted in a lower Multiple R-squared and non-significant p-values of explanatory variables. The final step-up model is:
+lm(Profit~Horsepower + wheelbase + Weigth + highwaymilespergallon)
+
+```{r, echo=FALSE, eval=FALSE}
+# Step-up
+#Assumption: Profit is explained due to the folowwing explanatory variables:
+  # Horsepower - City Miles Per Gallon - 	Highway Miles Per Gallon - Weight -	Wheel Base - 	Length - 	Width
+
+#Check each explanatory variable speratly for R2
+summary(lm(Profit~Horsepower,data=new_names))
+  # R2 = 0.6215
+summary(lm(Profit~citymilespergallon,data=new_names))
+  # R2 = 0.1554
+summary(lm(Profit~highwaymilespergallon,data=new_names))
+  # R2 = 0.2163
+summary(lm(Profit~Weight,data=new_names))
+  # R2 = 0.2163
+summary(lm(Profit~wheelbase,data=new_names))
+  # R2 = 0.009135
+summary(lm(Profit~Length,data=new_names))
+  # R2 = 0.2593
+summary(lm(Profit~Width,data=new_names))
+  # R2 = 0.0561
+
+#First step is to start with the one with highest R2, in our case Horsepower (R2 = 0.6215)
+
+#Now use Horsepower and check with the rest
+summary(lm(Profit~Horsepower+citymilespergallon, data=new_names ))
+  # Multiple R-squared:  0.6228
+summary(lm(Profit~Horsepower+highwaymilespergallon, data=new_names ))
+  # Multiple R-squared:  0.6231
+summary(lm(Profit~Horsepower+Weight, data=new_names ))
+  # Multiple R-squared:  0.6229
+summary(lm(Profit~Horsepower+wheelbase, data=new_names ))
+  # Multiple R-squared:  0.6411
+summary(lm(Profit~Horsepower+Length, data=new_names ))
+  # Multiple R-squared:  0.6322 
+summary(lm(Profit~Horsepower+Width, data=new_names ))
+  # Multiple R-squared:  0.6282
+
+#Highest R2 for next step-up model step -> Horsepower and wheelbase
+
+#Now use Horsepower+wheelbase and check with the rest
+summary(lm(Profit~Horsepower+wheelbase+citymilespergallon, data=new_names ))
+  # Multiple R-squared:  0.6409
+summary(lm(Profit~Horsepower+wheelbase+highwaymilespergallon, data=new_names ))
+  # Multiple R-squared:  0.6408
+summary(lm(Profit~Horsepower+wheelbase+Weight, data=new_names ))
+  # Multiple R-squared:  0.6497
+summary(lm(Profit~Horsepower+wheelbase+Length, data=new_names ))
+  # Multiple R-squared:  0.6428
+summary(lm(Profit~Horsepower+wheelbase+Width, data=new_names ))
+  # Multiple R-squared:  0.6459
+
+#Highest R2 and significant p-values for next step-up model step -> Horsepower and wheelbase and weight
+
+#Now use Horsepower+wheelbase+Weight and check with the rest
+summary(lm(Profit~Horsepower+wheelbase+Weight+citymilespergallon, data=new_names ))
+  # Multiple R-squared:  
+summary(lm(Profit~Horsepower+wheelbase+Weight+highwaymilespergallon, data=new_names ))
+  # Multiple R-squared:  
+summary(lm(Profit~Horsepower+wheelbase+Weight+Length, data=new_names ))
+  # Multiple R-squared:  
+summary(lm(Profit~Horsepower+wheelbase+Weight+Width, data=new_names ))
+  # Multiple R-squared:  
+
+#Highest R2 and significant p-values for next step-up model step -> Horsepower and wheelbase and weight and highwaymilespergallon
+
+#Now use Horsepower+wheelbase+Weight+highwaymilespergallon and check with the rest
+summary(lm(Profit~Horsepower+wheelbase+Weight+highwaymilespergallon+citymilespergallon, data=new_names ))
+  # Multiple R-squared:  
+summary(lm(Profit~Horsepower+wheelbase+Weight+highwaymilespergallon+Length, data=new_names ))
+  # Multiple R-squared:  
+summary(lm(Profit~Horsepower+wheelbase+Weight+highwaymilespergallon+Width, data=new_names ))
+  # Multiple R-squared: 
+
+#Adding either citymilespergallon, Length or Width yields insignificant explanatory variables. Therefore, we should stop at the previous step, giving us the following model
+
+#Step-up
+summary(lm(Profit~Horsepower+wheelbase+Weight+highwaymilespergallon, data=new_names ))
+
+# The R2 kept gettinging closer to 1 while performing the setp-up method, which means that the that the linear regression model can explain the measured response values (Y ) very well using a linear function of the explanatory variables (X1, . . . , Xp). In other words, the residuals ^en are relatively small.
+
+#Step-down
+summary(stepdown4)
+```
+## 5.3 Testing for Assumptions in Linear Model
+To finalize the linear model, there are several quality checks of the model to look at. 
+```{r, echo=FALSE, fig.align='center'}
+model_expl_var = new_names[12:19]
+model_expl_var = model_expl_var[,-c(2,6,7,8)]
+pairs(model_expl_var, main="Scatterplot of the linear Model")
+```
+After that the model was checked for residuals. Since, some values were missing ("NA"), the residuals were each plotted separately against profit.
+```{r, echo=FALSE, fig.align='center'}
+stepdown4 = lm(Profit~Horsepower + highwaymilespergallon + Weight + wheelbase, data = new_names )
+par(mfrow=c(2,2))
+plot(residuals(stepdown4),new_names$Horsepower[1:412], main="Residuals Plot Horsepower", xlab = "Residuals", ylab="Horsepower"); plot(residuals(stepdown4),new_names$wheelbase[1:412], main="Residuals Plot Wheelbase",xlab = "Residuals", ylab="Wheelbase"); plot(residuals(stepdown4),new_names$highwaymilespergallon[1:412], main="Residuals Plot Highway Miles p/g", xlab = "Residuals", ylab="Highway Miles Per Gallon"); plot(residuals(stepdown4),new_names$Weight[1:412], main="Residuals Plot Weight", xlab = "Residuals", ylab="Weight");
+```
+A Q-Q plot was made of the residuals of the model. This plot showed that, H0 that residuals are normally distributed, can not be assumed. The Shapiro-Wilk test for normality confirmed this (p<.001).
+```{r, echo=FALSE, fig.height=3, fig.width=3, fig.align='center'}
+stepdown4 = lm(Profit~Horsepower + highwaymilespergallon + Weight + wheelbase, data = new_names )
+qqnorm(residuals(stepdown4));qqline(residuals(stepdown4))
+#shapiro.test(residuals(stepdown4))
+```
+After that the model was checked for outliers. In the used model there were 25 outliers, that are shown in the in the graphs below and removed in the second graph.
+```{r, echo=FALSE, fig.height=4, fig.align='center'}
+outlierProfit = new_names$Profit
+outlierProfit <- outlierProfit[!outlierProfit %in% boxplot.stats(outlierProfit)$out]
+par(mfrow=c(1,2))
+myboxplot <- boxplot(Profit, main="Boxplot with Outliers", ylab="Profit")
+newbox <- boxplot(outlierProfit, main="Boxplot without Outliers", ylab="Profit")
+```
+Lastly, the influence point of the model was determined, using a Cook's distance analysis. The influence point was found at 1.21. The plot of Cook's distance is displayed below.
+
+```{r, echo=FALSE, fig.height=3, fig.width=3, fig.align='center'}
+stepdown4 = lm(Profit~Horsepower + highwaymilespergallon + Weight + wheelbase, data = new_names )
+plot(1:412,cooks.distance(stepdown4), xlab="Profit", ylab=" Cook's distance on model")
+```
+## 5.4 Final Model
+In the the table below four out of seven potential explanatory variables were added to the model. Both strategies, step-up and step-down methods, resulted in the same final model model. The quality checks for the linear model have been described above and then the final model is as follows:
+
+Profit = 823.4586 + 23.0525xHorsepower + 57.7583xhighwaymilespergallon + 0.7491xWeight - 67.0460xwheelbase.
+
+**Explanatory variable** | **coefficient**
+------------------|----------------
+(Intercept) | 823.4586
+Horsepower | 23.0525
+highwaymilespergallon | 57.7538
+Weight | 0.7491
+wheelbase | -67.0460
+
+From the linear model can be concluded that horsepower, highway miles per gallon, weight and wheelbase have the highest influence on profit. Horsepower, highway miles per gallon and weight have a positive relation with profit, whereas wheelbase holds a negative relation with profit
+ 
+# 6. Categorical Relations
+From the Shapiro-Wilk tests and Q-Q plots performed before, normality can't be assumed for "Profit". When determining whether binomial factors have influence on profit, a Mann-Whitney-Wilcoxon Test can be used. This test checks if data sets have equal distributions for both categories. Normality does not have to be assumed for this test.
+
+## 6.1 Mann-Whitney-Wilcoxon Test
+
+### 6.1.1 Wheel-drive
+The first binomial variables that are considered are all-wheel drive and rear-wheel drive. For "all-wheel drive", W=183180, p<.001. H0, that there is no difference between all-wheel drive and not all-wheel drive, can not be assumed. For "rear-wheel drive", W=183180, p<.001. For rear-wheel drive also applies that H0, that there is no difference between rear-wheel drive and not rear-wheel drive, can not be assumed. Both all-wheel drive and rear-wheel drive give higher profits than not- all-wheel or rear-wheel drive. 
+
+```{r, echo=FALSE, fig.height=3, fig.align='center', warning=FALSE}
+# --> Mann-Whitney Test & graphs for wheel drive
+
+library("ggpubr")
+
+require(gridExtra)
+plot1 <- ggboxplot(new_names, x = "allwheeldrive", y = "Profit", color = "allwheeldrive", palette = c("#00AFBB", "#E7B800"), ylab = "Profit", xlab = "allwheeldrive")
+plot2 <- ggboxplot(new_names, x = "rearwheeldrive", y = "Profit", color = "rearwheeldrive", palette = c("#00AFBB", "#E7B800"), ylab = "Profit", xlab = "rearwheeldrive")
+grid.arrange(plot1, plot2, ncol=2)
+```
+```{r, echo=FALSE, eval=FALSE}
+wilcox.test(Profit, new_names$allwheeldrive, alternative = "two.sided")
+
+wilcox.test(Profit, new_names$rearwheeldrive, alternative = "two.sided")
+# ook significant
+```
+### 6.1.2 Type of Car
+Next, binomial variables about cartype were tested. All car types, "Sportcar", "sportutility vehicle", "Wagon", "Minivan" and "Pickup", give a W-value of W=183180, p<.001. The H0, that type of car gives no difference for profit, can not be assumed. Type of car gives differences in Profit. Out of the plots below can be seen that sport car and sport utility vehicle give higher profits than non-sport cars and sport utility vehicles. Wagons give lower profits, as well as minivans. Also voor pickups applies that they can lead to lower profits.
+
+```{r, echo=FALSE}
+# --> Mann-Whitney Test & graphs for type of car
+library("ggpubr")
+require(gridExtra)
+```
+
+```{r, echo=FALSE, fig.height=3, fig.align='center', warning=FALSE}
+plot1 <- ggboxplot(new_names, x = "sportcar", y = "Profit", 
+          color = "sportcar", palette = c("#00AFBB", "#E7B800"),
+          ylab = "Profit", xlab = "sportcar")
+plot2 <- ggboxplot(new_names, x = "sportutilityvehicle", y = "Profit", 
+          color = "sportutilityvehicle", palette = c("#00AFBB", "#E7B800"),
+          ylab = "Profit", xlab = "sportutilityvehicle")
+grid.arrange(plot1, plot2, ncol=2)
+plot3 <- ggboxplot(new_names, x = "Wagon", y = "Profit", 
+          color = "Wagon", palette = c("#00AFBB", "#E7B800"),
+          ylab = "Profit", xlab = "Wagon")
+plot4 <- ggboxplot(new_names, x = "Minivan", y = "Profit", 
+          color = "Minivan", palette = c("#00AFBB", "#E7B800"),
+          ylab = "Profit", xlab = "Minivan")
+grid.arrange(plot3, plot4, ncol=2)
+plot5 <- ggboxplot(new_names, x = "Pickup", y = "Profit", 
+          color = "Pickup", palette = c("#00AFBB", "#E7B800"),
+          ylab = "Profit", xlab = "Pickup")
+grid.arrange(plot5, ncol=2)
+```
+```{r, echo=FALSE, eval=FALSE}
+wilcox.test(Profit, new_names$sportcar, alternative = "two.sided")
+
+wilcox.test(Profit, new_names$sportutilityvehicle, alternative = "two.sided")
+
+wilcox.test(Profit, new_names$Wagon, alternative = "two.sided")
+
+wilcox.test(Profit, new_names$Minivan, alternative = "two.sided")
+
+wilcox.test(Profit, new_names$Pickup, alternative = "two.sided")
+```
+## 6.2 Conclusions
+From the Mann-Whitney-Wilcoxon tests performed, can be concluded that both type of wheel-drive and type of car have influence on profit. When a car dealer wants to get most profit out of selling cars, it could be more profitable to focus on all-wheel drive of rear-wheel drive, when considering wheel-drive. When focusing on the type of car, sports cars and sport utility vehicles are most profitable.
+ 
+# 7. Factorial Relations
+The last variables that are not considered in any other analysis are engine size and number of cylinders. These variables are factors, as they are fixed values in a car and not a measurable random value. To check if these factors have influence on profit, an ANCOVA analysis is performed.
+
+## 7.1 ANCOVA
+Two ANCOVA's are used with the purpose to compare the profit of a car made on several engine sizes(1) and number of cylinders(2). Where horsepower is the numeric value in the ANCOVA model that closely relates to the two factors mentioned. Before performing the ANCOVA test it is practical to make a scatter plot of the response variable (Profit) against the covariate (engine size or number of cylinders), using separate symbols for each level of the factor.
+
+```{r, echo=FALSE, fig.height=3, fig.align='center'}
+par(mfrow=c(1,2))
+plot(Profit~new_names$Horsepower,pch=as.character(new_names$enginesize), xlab="Horsepower")
+plot(Profit~new_names$Horsepower,pch=as.character(new_names$numberofcylinders), xlab="Horsepower")
+```
+As is visible from the plots above, the linearity and equal slope assumption that is required for ANCOVA are visible in both figures. With the exception of a few points, it looks like with the increase of engine size and number of cylinders in combination with horsepower it increases the profit. After the previous step it is possible to perform a one-way ANCOVA model, controlling for the Profit to check the mentioned assumption.
+
+```{r, echo=FALSE, eval=FALSE}
+Enginesize = as.factor(new_names$enginesize)
+Enginesizeaov = lm(Profit~new_names$Horsepower+new_names$enginesize)
+
+anova(Enginesizeaov)
+
+drop1(Enginesizeaov, test="F")
+  # (Using drop1 the p-values shown are p-values for deleting one variable at a time fromthe full model, where as the     p-values in the output of anova are sequential, as in a step-up strategy. This problem does not arise in ANOVA or       linear regression, only in ANCOVA and mixed models.)
+
+contrasts(Enginesize)=contr.sum
+Newaov = lm(new_names$Profit~new_names$Horsepower+Enginesize)
+summary(Newaov)
+
+Cylinders = as.factor(new_names$numberofcylinders)
+Cylindersaov = lm(Profit~new_names$Horsepower+new_names$numberofcylinders)
+
+anova(Cylindersaov)
+
+drop1(Cylindersaov, test="F")
+
+contrasts(Cylinders)=contr.sum
+New2aov = lm(new_names$Profit~new_names$Horsepower+Cylinders)
+summary(New2aov)
+```
+According to the output it became clear that the engine sizes has no significant effect on the Profit (F = 2.6846, p-value = 0.1021) and so does the number of cylinders (F = 0.1387, p-value = 0.7098). 
+
+## 7.2 Conclusions
+When looking at the ANCOVA analysis, the results show that engine size as well as number of cylinders has no significant influence on profit. These factors, however are closely related to horsepower, that has showed significant influence on profit in the linear model. We can assume that these factors alone do not have influence on profit. We can however assume that engine size as well as number of cylinders do have an indirect relation with profit, via horsepower, as they are closely related to horsepower.
+ 
+# 8. Conclusion
+
+
+ 
+# Appendix. A
+Code
+ 
+# References
+
